@@ -1,9 +1,5 @@
-#include <iomanip>
 #include <iostream>
-#include <limits>
 #include <string>
-#include <vector>
-
 using namespace std;
 
 struct Book {
@@ -13,49 +9,17 @@ struct Book {
   bool isIssued;
 };
 
-vector<Book> library;
+Book library[100];
+int bookCount = 0;
 
-// Helper function to print a decorative line
-void printLine(char ch = '=', int length = 60) {
-  cout << string(length, ch) << endl;
+void printLine() {
+  for (int i = 0; i < 50; i++)
+    cout << "-";
+  cout << endl;
 }
 
-// Display the header banner
-void displayHeader() {
-  cout << "\n";
-  printLine('-');
-  cout << "-" << setw(40) << "LIBRARY MANAGEMENT SYSTEM" << setw(19) << "-"
-       << endl;
-  printLine('-');
-}
-
-// Display the menu
-void displayMenu() {
-  cout << "\n";
-  printLine('-');
-  cout << "  [1] Add New Book\n";
-  cout << "  [2] Issue Book\n";
-  cout << "  [3] Return Book\n";
-  cout << "  [4] Display All Books\n";
-  cout << "  [5] Search Book\n";
-  cout << "  [6] Delete Book\n";
-  cout << "  [7] Exit\n";
-  printLine('-');
-  cout << "  Enter your choice: ";
-}
-
-// Check if a book ID already exists
-bool bookExists(int id) {
-  for (const auto &book : library) {
-    if (book.id == id)
-      return true;
-  }
-  return false;
-}
-
-// Find book index by ID, returns -1 if not found
-int findBookIndex(int id) {
-  for (int i = 0; i < library.size(); i++) {
+int findBook(int id) {
+  for (int i = 0; i < bookCount; i++) {
     if (library[i].id == id)
       return i;
   }
@@ -63,32 +27,32 @@ int findBookIndex(int id) {
 }
 
 void addBook() {
-  Book newBook;
   cout << "\n--- Add New Book ---\n";
 
+  int id;
   cout << "Enter Book ID: ";
-  cin >> newBook.id;
+  cin >> id;
 
-  // Check for duplicate ID
-  if (bookExists(newBook.id)) {
-    cout << "Error: A book with ID " << newBook.id << " already exists!\n";
+  if (findBook(id) != -1) {
+    cout << "Error: A book with this ID already exists!\n";
     return;
   }
 
-  cin.ignore(); // Clear newline from buffer
+  library[bookCount].id = id;
+  cin.ignore();
   cout << "Enter Book Title: ";
-  getline(cin, newBook.title);
+  getline(cin, library[bookCount].title);
   cout << "Enter Book Author: ";
-  getline(cin, newBook.author);
-  newBook.isIssued = false;
-  library.push_back(newBook);
+  getline(cin, library[bookCount].author);
+  library[bookCount].isIssued = false;
 
-  cout << "\n>> Book '" << newBook.title << "' added successfully!\n";
+  cout << "Book '" << library[bookCount].title << "' added successfully!\n";
+  bookCount++;
 }
 
 void issueBook() {
-  if (library.empty()) {
-    cout << "\nNo books in the library to issue.\n";
+  if (bookCount == 0) {
+    cout << "\nNo books in the library.\n";
     return;
   }
 
@@ -97,23 +61,19 @@ void issueBook() {
   cout << "Enter Book ID to issue: ";
   cin >> id;
 
-  int index = findBookIndex(id);
-  if (index != -1) {
-    if (library[index].isIssued) {
-      cout << "\nError: Book '" << library[index].title
-           << "' is already issued.\n";
-    } else {
-      library[index].isIssued = true;
-      cout << "\n>> Book '" << library[index].title
-           << "' issued successfully!\n";
-    }
+  int index = findBook(id);
+  if (index == -1) {
+    cout << "Book not found.\n";
+  } else if (library[index].isIssued) {
+    cout << "Book '" << library[index].title << "' is already issued.\n";
   } else {
-    cout << "\nError: Book with ID " << id << " not found.\n";
+    library[index].isIssued = true;
+    cout << "Book '" << library[index].title << "' issued successfully!\n";
   }
 }
 
 void returnBook() {
-  if (library.empty()) {
+  if (bookCount == 0) {
     cout << "\nNo books in the library.\n";
     return;
   }
@@ -123,24 +83,48 @@ void returnBook() {
   cout << "Enter Book ID to return: ";
   cin >> id;
 
-  int index = findBookIndex(id);
-  if (index != -1) {
-    if (!library[index].isIssued) {
-      cout << "\nError: Book '" << library[index].title
-           << "' was not issued.\n";
-    } else {
-      library[index].isIssued = false;
-      cout << "\n>> Book '" << library[index].title
-           << "' returned successfully!\n";
-    }
+  int index = findBook(id);
+  if (index == -1) {
+    cout << "Book not found.\n";
+  } else if (!library[index].isIssued) {
+    cout << "Book '" << library[index].title << "' was not issued.\n";
   } else {
-    cout << "\nError: Book with ID " << id << " not found.\n";
+    library[index].isIssued = false;
+    cout << "Book '" << library[index].title << "' returned successfully!\n";
   }
 }
 
+void displayBooks() {
+  if (bookCount == 0) {
+    cout << "\nNo books in the library.\n";
+    return;
+  }
+
+  int available = 0, issued = 0;
+  for (int i = 0; i < bookCount; i++) {
+    if (library[i].isIssued)
+      issued++;
+    else
+      available++;
+  }
+
+  cout << "\n--- Library Inventory ---\n";
+  cout << "Total: " << bookCount << " | Available: " << available
+       << " | Issued: " << issued << endl;
+  printLine();
+
+  for (int i = 0; i < bookCount; i++) {
+    cout << "ID: " << library[i].id << " | Title: " << library[i].title
+         << " | Author: " << library[i].author
+         << " | Status: " << (library[i].isIssued ? "Issued" : "Available")
+         << endl;
+  }
+  printLine();
+}
+
 void searchBook() {
-  if (library.empty()) {
-    cout << "\nNo books in the library to search.\n";
+  if (bookCount == 0) {
+    cout << "\nNo books in the library.\n";
     return;
   }
 
@@ -150,44 +134,40 @@ void searchBook() {
   cout << "Enter title or author to search: ";
   getline(cin, keyword);
 
-  // Convert keyword to lowercase for case-insensitive search
-  string lowerKeyword = keyword;
-  for (char &c : lowerKeyword)
-    c = tolower(c);
+  string lowerKey = keyword;
+  for (int i = 0; i < lowerKey.length(); i++)
+    lowerKey[i] = tolower(lowerKey[i]);
 
-  vector<Book> results;
-  for (const auto &book : library) {
-    string lowerTitle = book.title;
-    string lowerAuthor = book.author;
-    for (char &c : lowerTitle)
-      c = tolower(c);
-    for (char &c : lowerAuthor)
-      c = tolower(c);
+  bool found = false;
+  for (int i = 0; i < bookCount; i++) {
+    string lowerTitle = library[i].title;
+    string lowerAuthor = library[i].author;
+    for (int j = 0; j < lowerTitle.length(); j++)
+      lowerTitle[j] = tolower(lowerTitle[j]);
+    for (int j = 0; j < lowerAuthor.length(); j++)
+      lowerAuthor[j] = tolower(lowerAuthor[j]);
 
-    if (lowerTitle.find(lowerKeyword) != string::npos ||
-        lowerAuthor.find(lowerKeyword) != string::npos) {
-      results.push_back(book);
+    if (lowerTitle.find(lowerKey) != string::npos ||
+        lowerAuthor.find(lowerKey) != string::npos) {
+      if (!found) {
+        cout << "\nSearch Results:\n";
+        printLine();
+        found = true;
+      }
+      cout << "ID: " << library[i].id << " | Title: " << library[i].title
+           << " | Author: " << library[i].author
+           << " | Status: " << (library[i].isIssued ? "Issued" : "Available")
+           << endl;
     }
   }
 
-  if (results.empty()) {
-    cout << "\nNo books found matching '" << keyword << "'.\n";
-  } else {
-    cout << "\n>> Found " << results.size() << " book(s):\n\n";
-    cout << left << setw(8) << "ID" << setw(25) << "Title" << setw(20)
-         << "Author" << setw(12) << "Status" << endl;
-    printLine('-');
-    for (const auto &book : results) {
-      cout << left << setw(8) << book.id << setw(25) << book.title << setw(20)
-           << book.author << setw(12)
-           << (book.isIssued ? "Issued" : "Available") << endl;
-    }
-  }
+  if (!found)
+    cout << "No books found matching '" << keyword << "'.\n";
 }
 
 void deleteBook() {
-  if (library.empty()) {
-    cout << "\nNo books in the library to delete.\n";
+  if (bookCount == 0) {
+    cout << "\nNo books in the library.\n";
     return;
   }
 
@@ -196,63 +176,44 @@ void deleteBook() {
   cout << "Enter Book ID to delete: ";
   cin >> id;
 
-  int index = findBookIndex(id);
-  if (index != -1) {
-    string deletedTitle = library[index].title;
-    library.erase(library.begin() + index);
-    cout << "\n>> Book '" << deletedTitle << "' deleted successfully!\n";
+  int index = findBook(id);
+  if (index == -1) {
+    cout << "Book not found.\n";
   } else {
-    cout << "\nError: Book with ID " << id << " not found.\n";
+    string title = library[index].title;
+    for (int i = index; i < bookCount - 1; i++)
+      library[i] = library[i + 1];
+    bookCount--;
+    cout << "Book '" << title << "' deleted successfully!\n";
   }
-}
-
-void displayBooks() {
-  if (library.empty()) {
-    cout << "\nNo books in the library.\n";
-    return;
-  }
-
-  // Count available and issued books
-  int available = 0, issued = 0;
-  for (const auto &book : library) {
-    if (book.isIssued)
-      issued++;
-    else
-      available++;
-  }
-
-  cout << "\n";
-  printLine('=');
-  cout << "                    LIBRARY INVENTORY\n";
-  cout << "       Total: " << library.size() << " | Available: " << available
-       << " | Issued: " << issued << endl;
-  printLine('=');
-
-  cout << left << setw(8) << "ID" << setw(25) << "Title" << setw(20) << "Author"
-       << setw(12) << "Status" << endl;
-  printLine('-');
-
-  for (const auto &book : library) {
-    cout << left << setw(8) << book.id << setw(25) << book.title << setw(20)
-         << book.author << setw(12) << (book.isIssued ? "Issued" : "Available")
-         << endl;
-  }
-  printLine('=');
 }
 
 int main() {
   int choice;
 
-  displayHeader();
+  cout << "\n";
+  printLine();
+  cout << "     LIBRARY MANAGEMENT SYSTEM\n";
+  printLine();
 
   do {
-    displayMenu();
+    cout << "\n";
+    printLine();
+    cout << "  1. Add New Book\n";
+    cout << "  2. Issue Book\n";
+    cout << "  3. Return Book\n";
+    cout << "  4. Display All Books\n";
+    cout << "  5. Search Book\n";
+    cout << "  6. Delete Book\n";
+    cout << "  7. Exit\n";
+    printLine();
+    cout << "  Enter your choice: ";
     cin >> choice;
 
     if (cin.fail()) {
       cin.clear();
-      cin.ignore(numeric_limits<streamsize>::max(), '\n');
-      cout << "\n>> Invalid input! Please enter a number (1-7).\n";
+      cin.ignore(1000, '\n');
+      cout << "Invalid input! Please enter a number.\n";
       continue;
     }
 
@@ -276,14 +237,11 @@ int main() {
       deleteBook();
       break;
     case 7:
-      cout << "\n";
-      printLine('-');
-      cout << "    Thank you for using Library Management System!\n";
-      cout << "                    Goodbye!\n";
-      printLine('-');
+      cout << "\nThank you for using Library Management System!\n";
+      cout << "Goodbye!\n";
       break;
     default:
-      cout << "\n>> Invalid choice! Please enter 1-7.\n";
+      cout << "Invalid choice! Please enter 1-7.\n";
     }
   } while (choice != 7);
 
