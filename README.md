@@ -41,11 +41,9 @@ Experience a seamless workflow with these key functionalities:
 
 This project showcases modern C++ programming concepts:
 
-- **Object-Oriented Design**: Utilizes `struct Book` to encapsulate book data (`id`, `title`, `author`, `isIssued`).
-- **Dynamic Memory Management**: leverages the **Standard Template Library (STL)** `vector` for efficient, dynamic storage of book records.
+- Utilizes `struct Book` to encapsulate book data (`id`, `title`, `author`, `isIssued`).
 - **Modular Architecture**: Clean code separation with dedicated functions for each operation (`addBook`, `issueBook`, `searchBook`).
 - **Input Validation**: Robust handling of user inputs to prevent crashes and ensure data integrity.
-- **Stream Manipulation**: Uses `<iomanip>` for beautifully formatted, aligned console output.
 
 ## 🚀 Getting Started
 
